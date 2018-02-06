@@ -21,9 +21,9 @@ labels = train_data[['toxic', 'severe_toxic', 'obscene', 'threat', 'insult', 'id
 
 texts = [text[0] for text in text_data]
 
-test = pd.read_csv(test_csv)
+test = pd.read_csv("data/test.csv")
 test_data = test[['comment_text']].values.tolist()
-test_ids = pd.read_csv()[['id']].values
+test_ids = test[['id']].values
 test_texts = [text[0] for text in test_data]
 
 # Tokenizing raw text data
@@ -58,11 +58,11 @@ x_val = data[training_samples: training_samples + validation_samples]
 y_val = labels[training_samples: training_samples + validation_samples]
 
 # Import Glove pre-trained word embeddings
-glove_dir = '/Users/brendan/Desktop/kaggle/toxic_comment_classification/bi_gru/data/glove.6B'
+# glove_dir = '/Users/brendan/Desktop/kaggle/toxic_comment_classification/bi_gru/data/glove.6B'
 
 # HYPERPARAMETER - which pretrained embedding to use, different dimensionality
 embeddings_index = {}
-f = open(os.path.join(glove_dir, 'glove.6B.100d.txt'))
+f = open("data/glove.6B/glove.6B.100d.txt")
 for line in f:
 	values = line.split()
 	word = values[0]
