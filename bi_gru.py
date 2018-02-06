@@ -11,13 +11,20 @@ from keras.layers import Embedding, Dense, Bidirectional, Dropout, CuDNNGRU, Inp
 from keras.optimizers import RMSprop
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 
+CLASSES = ["toxic", "severe_toxic", "obscene", "threat", "insult", "identity_hate"]
 
 # Import train data, 159570 samples
 # Make data file-paths a command-line argument
-text_data = pd.read_csv("data/train.csv")[['comment_text']].values.tolist()
-labels = pd.read_csv("data/train.csv")[['toxic', 'severe_toxic', 'obscene', 'threat', 'insult', 'identity_hate']].values
+train_data = pd.read_csv("data/train.csv")
+text_data = train_data[['comment_text']].values.tolist()
+labels = train_data[['toxic', 'severe_toxic', 'obscene', 'threat', 'insult', 'identity_hate']].values
 
 texts = [text[0] for text in text_data]
+
+test = pd.read_csv(test_csv)
+test_data = test[['comment_text']].values.tolist()
+test_ids = pd.read_csv()[['id']].values
+test_texts = [text[0] for text in test_data]
 
 # Tokenizing raw text data
 maxlen = 500 # HYPERPARAMETER
@@ -28,10 +35,12 @@ max_words = 10000 # HYPERPARAMETER - glove.6B has 400k vocab size
 tokenizer = Tokenizer(num_words=max_words)
 tokenizer.fit_on_texts(texts)
 sequences = tokenizer.texts_to_sequences(texts)
+test_sequences = tokenizer.texts_to_sequences(test_texts)
 word_index = tokenizer.word_index
 print('Found %s unique tokens.' % len(word_index))
 
 data = pad_sequences(sequences, maxlen=maxlen)
+data_test = pad_sequences(test_sequences, maxlen=maxlen)
 
 print('Shape of data tensor:', data.shape)
 print('Shape of label tensor:', labels.shape)
@@ -146,3 +155,13 @@ plt.title('Training and validation loss')
 plt.legend()
 
 plt.show()
+
+print("Making predictions")
+predictions = model.predict(data_test, batch_size=batch_size)
+test_ids = test_ids.reshape((len(test_ids), 1))
+
+test_predicts = pd.DataFrame(data=test_predicts, columns=CLASSES)
+test_predicts["id"] = test_ids
+test_predicts = test_predicts[["id"] + CLASSES]
+test_predicts.to_csv("submission.csv", index=False)
+
